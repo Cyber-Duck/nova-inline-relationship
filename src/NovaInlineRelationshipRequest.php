@@ -55,7 +55,18 @@ class NovaInlineRelationshipRequest extends NovaRequest
 
         try {
             $session = $from->getSession();
-            $request->setLaravelSession($session);
+            
+            // Laravel 12 compatibility fix: Handle SymfonySessionDecorator properly
+            if ($session instanceof \Illuminate\Session\SymfonySessionDecorator) {
+                // Extract the underlying session store from the decorator
+                $reflector = new \ReflectionClass($session);
+                $storeProperty = $reflector->getProperty('store');
+                $storeProperty->setAccessible(true);
+                $actualSession = $storeProperty->getValue($session);
+                $request->setLaravelSession($actualSession);
+            } else {
+                $request->setLaravelSession($session);
+            }
         } catch (SessionNotFoundException $exception) {
             // do nothing
         }
