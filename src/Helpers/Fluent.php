@@ -14,8 +14,13 @@ class Fluent extends \Illuminate\Support\Fluent
      *
      * @return $this
      */
-    public function fill(array $attributes)
+    public function fill($attributes)
     {
+        // Ensure attributes is an array for Laravel 12 compatibility
+        if (!is_array($attributes)) {
+            $attributes = (array) $attributes;
+        }
+        
         foreach ($attributes as $key => $value) {
             $attribute = Str::replace('->', '.', $key);
 
